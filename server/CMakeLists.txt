@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 2.6 )
 set( BIN server )
-project( kurs_server )
+project( kurs )
 set( SOURCE_ROOT ./src )
 aux_source_directory( ${SOURCE_ROOT} SOURCES )
 include_directories( ./headers )
