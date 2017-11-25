@@ -3,8 +3,8 @@
 
 #include "../headers/object.h"
 
-const static int SCREEN_HEIGHT = 800;
-const static int SCREEN_WIDTH = 600; 
+const static int SCREEN_HEIGHT = 600;
+const static int SCREEN_WIDTH = 800; 
 
 class Ball : public Object
 {
