@@ -8,6 +8,9 @@ const static int SCREEN_WIDTH = 800;
 
 class Ball : public Object
 {
+    private:
+        double vecX, vecY;
+
     public:
         Ball();
 
@@ -18,11 +21,6 @@ class Ball : public Object
         double getVecY();
 
         void move();
-        
-    private:
-        double vecX, vecY;
-        int sockfd;
-        int onesockfd;
 };
 
 #endif

@@ -1,15 +1,12 @@
 #include <iostream>
-#include <thread>
-#include <chrono>
 
-#include "../headers/ball.h"
+#include "../headers/server.h"
+
+#define MAX_CLIENT 2
 
 int main()
 {
-    Ball *ball = new Ball();
-    while (1) {
-        ball->move();
-        //std::this_thread::sleep_for(std::chrono::seconds(1));
-    }
+    Server *serv = new Server();
+    serv->start();
     return 0;
 }
