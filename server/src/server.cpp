@@ -1,6 +1,5 @@
 #include <iostream>
 #include <vector>
-#include <random>
 
 #include <unistd.h>
 #include <string.h>
@@ -13,21 +12,25 @@
 #include "../headers/server.h"
 #include "../headers/object.h"
 #include "../headers/ball.h"
+#include "../headers/pane.h"
 
 std::vector<Object *> *Server::getObjects() { return this->objects; }
 void Server::setObjects(Object *object) { this->objects->push_back(object); }
 
 void Server::move()
 {
-    for (auto &i : *this->getObjects()) {
+    for (auto &i : *this->getObjects()) 
         i->move();
-        double x = 0,
-               y = 0;
-        x = i->getX();
-        y = i->getY();
-        write(onesockfd, &x, sizeof(x));
-        write(onesockfd, &y, sizeof(y));
+
+    double sendData[10] = { 0 };
+    for (int i = 0; i < (int) this->objects->size(); i++) {
+        sendData[i * 2] = this->objects->at(i)->getX();
+        sendData[i * 2 + 1] = this->objects->at(i)->getY();
     }
+    Ball *ball = (Ball *) this->objects->at(2);
+    sendData[8] = ball->getScore(0);
+    sendData[9] = ball->getScore(1);
+    write(onesockfd, &sendData, sizeof(sendData));
 }
 
 void Server::start()
@@ -42,14 +45,12 @@ Server::Server()
 
     this->objects = new std::vector<Object *>;
 
-    std::random_device rd;
-    std::mt19937 mt(rd());
-    std::uniform_real_distribution<double> dist(-10.0, 10.0);
+    Pane *pl1 = new Pane();
+    setObjects(pl1);
+    Pane *pl2 = new Pane();
+    setObjects(pl2);
 
-    Ball *ball = new Ball();
-    ball->setVecX(dist(mt));
-    ball->setVecY(dist(mt));
-
+    Ball *ball = new Ball(pl1, pl2);
     setObjects(ball);
 
     int port = 1337;
@@ -63,11 +64,13 @@ Server::Server()
 
     bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
 
+    int clientNum = 0;
     std::cout << "Initializaion done" << std::endl;
 
-    std::cout << "Wait for client..." << std::endl;
+    std::cout << "Wait for clients..." << std::endl;
     listen(sockfd, 5);
     socklen_t addrlen = 0;
     onesockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &addrlen);
-    std::cout << "Client connected: " << inet_ntoa(cli_addr.sin_addr) << std::endl;
+    std::cout << "Client " << clientNum  << "connected" << std::endl;
+    write(onesockfd, &clientNum, sizeof(clientNum));
 }

@@ -1,14 +1,19 @@
-#ifndef BALL_H
-#define BALL_H
+#ifndef PANE_H
+#define PANE_H
 
 #include "../headers/object.h"
 
 class Pane : public Object
 {
+    private:
+        double sizeY,
+               sizeX;
+
     public:
         Pane();
-        Pane(int player);
         void move();
+        double getSizeX();
+        double getSizeY();
 };
 
 #endif

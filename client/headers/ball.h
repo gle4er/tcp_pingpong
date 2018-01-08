@@ -5,11 +5,11 @@
 
 class Ball : public Object
 {
+    private:
+
     public:
         Ball();
         void move();
-    private:
-        int sockfd;
 };
 
 #endif

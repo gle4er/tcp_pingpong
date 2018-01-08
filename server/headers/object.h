@@ -1,9 +1,12 @@
 #ifndef OBJ_H
 #define OBJ_H
 
+const static int SCREEN_HEIGHT = 600;
+const static int SCREEN_WIDTH = 800; 
+
 class Object
 {
-    private:
+    protected:
         double vecX, vecY,
                x, y;
     public:
