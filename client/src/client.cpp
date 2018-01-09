@@ -36,25 +36,35 @@ void Client::game()
 {
 	SDL_Event e;
     bool quit = false;
+    int moveIndicator = 0;
 
 	while(!quit) {
 		while(SDL_PollEvent( &e ) != 0) {
 			if(e.type == SDL_QUIT) 
 				quit = true;
-            if (e.type == SDL_KEYDOWN) 
+            if (e.type == SDL_KEYDOWN) {
                 if (e.key.keysym.sym == SDLK_q)
                     quit = true;
+                if (e.key.keysym.sym == SDLK_j)
+                    moveIndicator = 1;
+                if (e.key.keysym.sym == SDLK_k)
+                    moveIndicator = -1;
+            }
 
-            /*
-             *if (e.type == SDL_KEYDOWN) 
-             *    if (e.key.keysym.sym == SDLK_j)
-             */
-
+            if (e.type == SDL_KEYUP) {
+                if (e.key.keysym.sym == SDLK_j)
+                    moveIndicator = 0;
+                else if (e.key.keysym.sym == SDLK_k)
+                    moveIndicator = 0;
+            }
         }
+
+        this->objects->at(this->id)->setVecY(moveIndicator * MOVE_SPEED);
+        this->objects->at(this->id)->move();
+
         this->send();
         this->recv();
-        for (auto &i : *this->objects)
-            i->move();
+
         draw(this->objects);
     }
 }

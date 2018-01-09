@@ -14,6 +14,12 @@ class Object
 
         void setY(double y);
         double getY();
+
+        void setVecX(double vecX);
+        double getVecX();
+
+        void setVecY(double vecY);
+        double getVecY();
 };
 
 #endif

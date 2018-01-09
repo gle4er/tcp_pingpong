@@ -6,5 +6,6 @@
 #define SIZE_PANE_X 10
 #define SIZE_PANE_Y 30
 #define SIZE_BALL 5
+#define MOVE_SPEED 13
 
 #endif

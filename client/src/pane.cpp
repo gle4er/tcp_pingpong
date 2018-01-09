@@ -15,4 +15,8 @@ Pane::Pane()
     player++;
 }
 
-void Pane::move() {}
+void Pane::move() 
+{
+    double y = getY() + getVecY();
+    this->setY(y);
+}

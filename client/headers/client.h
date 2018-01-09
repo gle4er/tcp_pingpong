@@ -11,7 +11,7 @@
 
 class Client 
 {
-    protected:
+    private:
         std::vector<Object *> *objects;
         int sockfd;
         int id;
