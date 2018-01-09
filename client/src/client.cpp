@@ -24,12 +24,14 @@ void Client::send()
 
 void Client::recv()
 {
-    double coords[10] = { 0 };
-    read(sockfd, &coords, sizeof(coords));
+    double recvData[10] = { 0 };
+    read(sockfd, &recvData, sizeof(recvData));
     for (int i = 0; i < (int) this->objects->size(); i++) {
-        this->objects->at(i)->setX(coords[i * 2]);
-        this->objects->at(i)->setY(coords[i * 2 + 1]);
+        this->objects->at(i)->setX(recvData[i * 2]);
+        this->objects->at(i)->setY(recvData[i * 2 + 1]);
     }
+    this->score[0] = recvData[8];
+    this->score[1] = recvData[9];
 }
 
 void Client::game()
@@ -65,7 +67,7 @@ void Client::game()
         this->send();
         this->recv();
 
-        draw(this->objects);
+        draw(this->objects, score);
     }
 }
 

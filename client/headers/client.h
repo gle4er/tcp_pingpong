@@ -15,6 +15,7 @@ class Client
         std::vector<Object *> *objects;
         int sockfd;
         int id;
+        int score[2] = { 0 };
 
     public:
         void setObjects(Object *);
