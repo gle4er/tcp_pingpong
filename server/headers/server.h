@@ -2,6 +2,7 @@
 #define SERVER_H
 
 #include <vector>
+#include <sys/socket.h>
 
 #include "../headers/object.h"
 
@@ -13,7 +14,9 @@ class Server
 {
     private:
         std::vector<Object *> *objects;
-        int sockfd, onesockfd;
+        int masterSD, clientSD[2] = { 0 }, maxSD; //Socket Descriptor
+        fd_set readSD;
+
     public:
         std::vector<Object *> *getObjects();
         void setObjects(Object *);

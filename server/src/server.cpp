@@ -20,15 +20,28 @@ void Server::setObjects(Object *object) { this->objects->push_back(object); }
 void Server::move()
 {
     double recvData[3] = { 0 };
-    read(onesockfd, &recvData, sizeof(recvData));
-    int id = recvData[2];
-    objects->at(id)->setX(recvData[0]);
-    objects->at(id)->setY(recvData[1]);
+    
+    for (int i = 0; i < 2; i++) {
+        int sd = clientSD[i];
 
-    for (auto &i : *this->getObjects()) 
-        i->move();
+        /*
+         *select(maxSD + 1, &readSD, NULL, NULL, NULL);
+         *if (FD_ISSET(sd, &readSD)) 
+         *    if (!read(sd, &recvData, sizeof(recvData)))
+         *        close(sd);
+         */
+        
+        read(sd, &recvData, sizeof(recvData));
+        int id = recvData[2];
+        objects->at(id)->setX(recvData[0]);
+        objects->at(id)->setY(recvData[1]);
+
+    }
+
+    objects->at(BALL)->move();
 
     double sendData[10] = { 0 };
+
     for (int i = 0; i < (int) this->objects->size(); i++) {
         sendData[i * 2] = this->objects->at(i)->getX();
         sendData[i * 2 + 1] = this->objects->at(i)->getY();
@@ -36,7 +49,18 @@ void Server::move()
     Ball *ball = (Ball *) this->objects->at(2);
     sendData[8] = ball->getScore(0);
     sendData[9] = ball->getScore(1);
-    write(onesockfd, &sendData, sizeof(sendData));
+
+    for (int i = 0; i < 2; i++) {
+        int sd = clientSD[i];
+        /*
+         *select(maxSD + 1, &readSD, NULL, NULL, NULL);
+         *if (FD_ISSET(sd, &readSD)) 
+         *    if (!write(sd, &sendData, sizeof(sendData)))
+         *        close(sd);
+         */
+
+        write(sd, &sendData, sizeof(sendData));
+    }
 }
 
 void Server::start()
@@ -61,23 +85,39 @@ Server::Server()
 
     int port = 1337;
 
-    this->sockfd = socket(AF_INET, SOCK_STREAM, 0);
+    this->masterSD = socket(AF_INET, SOCK_STREAM, 0);
 
     struct sockaddr_in serv_addr, cli_addr;
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_port = htons(port);
 
-    bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+    int opt = 1;
+    setsockopt(masterSD, SOL_SOCKET, SO_REUSEADDR, (int *) &opt, sizeof(int));
 
-    int clientNum = 0;
+    bind(masterSD, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+
     std::cout << "Initializaion done" << std::endl;
 
     std::cout << "Wait for clients..." << std::endl;
-    listen(sockfd, 5);
+    int clientNum = 0;
+    listen(masterSD, 3);
     socklen_t addrlen = 0;
-    onesockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &addrlen);
-    std::cout << "Client " << clientNum << " connected" << std::endl;
-    write(onesockfd, &clientNum, sizeof(clientNum));
-    clientNum++;
+    FD_ZERO(&readSD);
+    FD_SET(masterSD, &readSD);
+    this->maxSD = masterSD;
+    for (int i = 0; i < 2; i++) {
+        clientSD[i] = accept(masterSD, (struct sockaddr *) &cli_addr, &addrlen);
+        std::cout << "Client " << clientNum << " connected" << std::endl;
+        write(clientSD[i], &clientNum, sizeof(clientNum));
+        FD_SET(clientSD[i], &readSD);
+        if (clientSD[i] > maxSD)
+            maxSD = clientSD[i];
+        clientNum++;
+    }
+
+    for (int i = 0; i < 2; i++) {
+        int flg = 1;
+        write(clientSD[i], &flg, sizeof(flg));
+    }
 }

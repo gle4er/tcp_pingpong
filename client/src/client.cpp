@@ -101,6 +101,10 @@ Client::Client()
     setObjects(pl1);
     setObjects(pl2);
     setObjects(ball);
+
+    std::cout << "Waiting for second player" << std::endl;
+    int readyFlg = 0;
+    read(sockfd, &readyFlg, sizeof(readyFlg));
 }
 
 Client::~Client()
