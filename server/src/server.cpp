@@ -19,6 +19,12 @@ void Server::setObjects(Object *object) { this->objects->push_back(object); }
 
 void Server::move()
 {
+    double recvData[3] = { 0 };
+    read(onesockfd, &recvData, sizeof(recvData));
+    int id = recvData[2];
+    objects->at(id)->setX(recvData[0]);
+    objects->at(id)->setY(recvData[1]);
+
     for (auto &i : *this->getObjects()) 
         i->move();
 
@@ -71,6 +77,7 @@ Server::Server()
     listen(sockfd, 5);
     socklen_t addrlen = 0;
     onesockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &addrlen);
-    std::cout << "Client " << clientNum  << "connected" << std::endl;
+    std::cout << "Client " << clientNum << " connected" << std::endl;
     write(onesockfd, &clientNum, sizeof(clientNum));
+    clientNum++;
 }

@@ -5,6 +5,10 @@
 
 #include "../headers/object.h"
 
+#define BALL 2
+#define PL1 0
+#define PL2 1
+
 class Client 
 {
     protected:
@@ -17,6 +21,7 @@ class Client
         std::vector<Object *> *getObjects();
 
         void recv();
+        void send();
         void game();
         void start();
         Client();

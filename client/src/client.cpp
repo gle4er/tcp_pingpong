@@ -7,9 +7,20 @@
 #include "../headers/ball.h"
 #include "../headers/gfx.h"
 #include "../headers/pane.h"
+#include "../headers/settings.h"
 
 std::vector<Object *> *Client::getObjects() { return this->objects; }
 void Client::setObjects(Object *object) { this->objects->push_back(object); }
+
+void Client::send()
+{
+    int indx = this->id;
+    double sendData[3] = { 0 };
+    sendData[0] = this->objects->at(indx)->getX();
+    sendData[1] = this->objects->at(indx)->getY();
+    sendData[2] = indx;
+    write(sockfd, &sendData, sizeof(sendData));
+}
 
 void Client::recv()
 {
@@ -18,11 +29,6 @@ void Client::recv()
     for (int i = 0; i < (int) this->objects->size(); i++) {
         this->objects->at(i)->setX(coords[i * 2]);
         this->objects->at(i)->setY(coords[i * 2 + 1]);
-    }
-    if (this->id) {
-        Pane *tmp = (Pane *) this->objects->at(0);
-        this->objects->at(0) = this->objects->at(1);
-        this->objects->at(1) = (Object *) tmp;
     }
 }
 
@@ -35,22 +41,28 @@ void Client::game()
 		while(SDL_PollEvent( &e ) != 0) {
 			if(e.type == SDL_QUIT) 
 				quit = true;
-            if (e.type == SDL_KEYDOWN) {
+            if (e.type == SDL_KEYDOWN) 
                 if (e.key.keysym.sym == SDLK_q)
                     quit = true;
-            }
+
+            /*
+             *if (e.type == SDL_KEYDOWN) 
+             *    if (e.key.keysym.sym == SDLK_j)
+             */
+
         }
+        this->send();
         this->recv();
-        draw(this->objects);
         for (auto &i : *this->objects)
             i->move();
+        draw(this->objects);
     }
 }
 
 void Client::start()
 {
     std::cout << "Starting client" << std::endl;
-    initGfx(800, 600);
+    initGfx();
     game();
 }
 

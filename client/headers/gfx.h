@@ -1,9 +1,9 @@
-#ifndef LAB3_H
-#define LAB3_H
+#ifndef GFX_H
+#define GFX_H
 
 #include "../headers/object.h"
 
-void initGfx(int SCREEN_WIDTH, int SCREEN_HEIGHT);
+void initGfx();
 void draw(std::vector<Object *> *objects);
 void clear();
 

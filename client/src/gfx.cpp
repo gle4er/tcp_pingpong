@@ -3,11 +3,13 @@
 #include <SDL2/SDL.h>
 
 #include "../headers/gfx.h"
+#include "../headers/client.h"
+#include "../headers/settings.h"
 
 SDL_Window* gWindow = NULL;
 SDL_Renderer* gRenderer = NULL;
 
-void initGfx(int SCREEN_WIDTH, int SCREEN_HEIGHT)
+void initGfx()
 {
 	SDL_Init(SDL_INIT_VIDEO);
 	SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
@@ -22,18 +24,18 @@ void draw(std::vector<Object *> *objects)
 {
     SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
 	SDL_RenderClear(gRenderer);
-    circleRGBA(gRenderer, objects->at(2)->getX(), objects->at(2)->getY(), 5, 
-            0xFF, 0xFF, 0xFF, 0xFF);
+    circleRGBA(gRenderer, objects->at(BALL)->getX(), objects->at(BALL)->getY(), 
+            SIZE_BALL, 0xFF, 0xFF, 0xFF, 0xFF);
     for (int i = 0; i < 2; i++) {
         static int mult = -1;
-        int x1 = objects->at(i)->getX() - 10 * mult;
+        int x1 = objects->at(i)->getX() - SIZE_PANE_X * mult;
         int x2 = objects->at(i)->getX();
-        int y1 = objects->at(i)->getY() - 30;
-        int y2 = objects->at(i)->getY() + 30;
+        int y1 = objects->at(i)->getY() - SIZE_PANE_Y;
+        int y2 = objects->at(i)->getY() + SIZE_PANE_Y;
         rectangleRGBA(gRenderer, x1, y1, x2, y2, 0xFF, 0xFF, 0xFF, 0xFF);
         mult *= -1;
     }
-	SDL_RenderPresent( gRenderer );
+	SDL_RenderPresent(gRenderer);
     SDL_Delay(32);
 }
 
