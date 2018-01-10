@@ -2,12 +2,16 @@
 #include <arpa/inet.h>
 #include <SDL2/SDL.h> 
 #include <unistd.h>
+#include <thread>
+#include <sys/poll.h>
 
 #include "../headers/client.h"
 #include "../headers/ball.h"
 #include "../headers/gfx.h"
 #include "../headers/pane.h"
 #include "../headers/settings.h"
+
+bool msgFlg = false;
 
 std::vector<Object *> *Client::getObjects() { return this->objects; }
 void Client::setObjects(Object *object) { this->objects->push_back(object); }
@@ -51,6 +55,8 @@ void Client::game()
                     moveIndicator = 1;
                 if (e.key.keysym.sym == SDLK_k)
                     moveIndicator = -1;
+                if (e.key.keysym.sym == SDLK_RETURN)
+                    msgFlg = true;
             }
 
             if (e.type == SDL_KEYUP) {
@@ -61,13 +67,66 @@ void Client::game()
             }
         }
 
-        this->objects->at(this->id)->setVecY(moveIndicator * MOVE_SPEED);
-        this->objects->at(this->id)->move();
+        if (!msgFlg) {
+            this->objects->at(this->id)->setVecY(moveIndicator * MOVE_SPEED);
+            this->objects->at(this->id)->move();
 
-        this->send();
-        this->recv();
+            this->send();
+            this->recv();
+            draw(this->objects, score);
+        }
+    }
+}
 
-        draw(this->objects, score);
+void Client::messaging()
+{
+    std::cout << "Setup messaging" << std::endl;
+    int port = 1338;
+
+    struct sockaddr_in serv_addr;
+    serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+    serv_addr.sin_port = htons(port);
+    serv_addr.sin_family = AF_INET;
+
+    int msgfd = socket(AF_INET, SOCK_STREAM, 0);
+    if (msgfd < 0)
+        perror("socket");
+    int rc = connect(msgfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));
+    if (rc < 0)
+        perror("connect");
+    int tmp = -1;
+    read(msgfd, &tmp, sizeof(int));
+    std::cout << "tmp: " << tmp << std::endl;
+    std::cout << "rc: " << rc << std::endl;
+    struct pollfd readFd;
+    readFd.fd = msgfd;
+    readFd.events = POLLIN;
+    std::cout << "Connected messaging server" << std::endl;
+
+    while (1) {
+        if (msgFlg) {
+            msgFlg = false;
+            char *msg = enterMsg(this->id);
+            if (this->id)
+                msg[98] = '1';
+            else
+                msg[98] = '0';
+            write(msgfd, msg, sizeof(char) * 100);
+            std::cout << "sent: " << msg << std::endl;
+            free(msg);
+        } else {
+            int rc = poll(&readFd, 1, 500);
+            if (rc < 0)
+                perror("poll");
+            if (readFd.revents & POLLIN) {
+                char *msg = (char *) malloc(sizeof(*msg) * 100);
+                read(msgfd, msg, sizeof(char) * 100);
+                msg[98] = ' ';
+                enterMsg(msg);
+                std::cout <<  msg << std::endl;
+                free(msg);
+            }
+        }
     }
 }
 
@@ -107,6 +166,9 @@ Client::Client()
     std::cout << "Waiting for second player" << std::endl;
     int readyFlg = 0;
     read(sockfd, &readyFlg, sizeof(readyFlg));
+
+    std::thread msgThread(&Client::messaging, this);
+    msgThread.detach();
 }
 
 Client::~Client()

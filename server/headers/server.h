@@ -14,14 +14,17 @@ class Server
 {
     private:
         std::vector<Object *> *objects;
-        int masterSD, clientSD[2] = { 0 }, maxSD; //Socket Descriptor
-        fd_set readSD;
+        int masterSD, clientSD[2] = { 0 },
+            peerSD[2] = { 0 }; //Socket Descriptor
+        fd_set readSD, typeSD;
+        void messaging();
+        void messageSetup();
 
     public:
         std::vector<Object *> *getObjects();
         void setObjects(Object *);
 
-        void move();
+        void tick();
         void start();
 
         Server();

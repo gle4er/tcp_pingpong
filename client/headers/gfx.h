@@ -7,6 +7,8 @@
 
 void initGfx();
 void draw(std::vector<Object *> *objects, int *score);
+char *enterMsg(int id);
+void enterMsg(char *msg);
 void clear();
 
 #endif

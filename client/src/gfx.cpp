@@ -12,6 +12,8 @@ SDL_Renderer* gRenderer = NULL;
 
 TTF_Font* font = NULL;
 SDL_Color white = {255, 255, 255, 255};
+bool showFlg = false;
+SDL_Texture* msgTexture = NULL;
 
 void initGfx()
 {
@@ -28,6 +30,7 @@ void initGfx()
 
 void draw(std::vector<Object *> *objects, int *score)
 {
+    static int delay = 0;
     SDL_SetRenderDrawColor(gRenderer, 0x00, 0x00, 0x00, 0x00);
 	SDL_RenderClear(gRenderer);
     circleRGBA(gRenderer, objects->at(BALL)->getX(), objects->at(BALL)->getY(), 
@@ -42,20 +45,53 @@ void draw(std::vector<Object *> *objects, int *score)
         mult *= -1;
     }
 
-    char *msg = (char *) malloc(sizeof(*msg) * 20);
-    sprintf(msg, "%d - %d", score[0], score[1]);
-    SDL_Surface* msgSurf = TTF_RenderText_Blended(font, msg, white);
-    SDL_Texture* msgTexture = SDL_CreateTextureFromSurface(gRenderer, msgSurf);
-    SDL_Rect msgRect = { SCREEN_WIDTH / 2 - 50, 0, 100, 75 };
-    SDL_RenderCopy(gRenderer, msgTexture, NULL, &msgRect);
+    char *scoreTxt = (char *) malloc(sizeof(*score) * 20);
+    sprintf(scoreTxt, "%d - %d", score[0], score[1]);
+    SDL_Surface* scoreSurf = TTF_RenderText_Blended(font, scoreTxt, white);
+    SDL_Texture* scoreTexture = SDL_CreateTextureFromSurface(gRenderer, scoreSurf);
+    SDL_Rect scoreRect = { SCREEN_WIDTH / 2 - 50, 0, 100, 75 };
+    SDL_RenderCopy(gRenderer, scoreTexture, NULL, &scoreRect);
+
+    if (showFlg && delay < 70) {
+        SDL_Rect msgRect = { SCREEN_WIDTH / 2 - 100, SCREEN_HEIGHT - 75, 
+                                300, 75 };
+        SDL_RenderCopy(gRenderer, msgTexture, NULL, &msgRect);
+        delay++;
+    } else {
+        delay = 0;
+        showFlg = false;
+        SDL_DestroyTexture(msgTexture);
+    }
 
 	SDL_RenderPresent(gRenderer);
 
-    SDL_DestroyTexture(msgTexture);
-    SDL_FreeSurface(msgSurf);
-    free(msg);
+    SDL_DestroyTexture(scoreTexture);
+    SDL_FreeSurface(scoreSurf);
+    free(scoreTxt);
 
     SDL_Delay(32);
+}
+
+char *enterMsg(int id)
+{
+    char *msg = (char *) malloc(sizeof(*msg) * 100);
+    sprintf(msg, "pl%d: nice game", id);
+
+    SDL_Surface* msgSurf = TTF_RenderText_Blended(font, msg, white);
+    msgTexture = SDL_CreateTextureFromSurface(gRenderer, msgSurf);
+    showFlg = true;
+
+    SDL_FreeSurface(msgSurf);
+    return msg;
+}
+
+void enterMsg(char *msg)
+{
+    SDL_Surface* msgSurf = TTF_RenderText_Blended(font, msg, white);
+    msgTexture = SDL_CreateTextureFromSurface(gRenderer, msgSurf);
+    showFlg = true;
+
+    SDL_FreeSurface(msgSurf);
 }
 
 void clear()

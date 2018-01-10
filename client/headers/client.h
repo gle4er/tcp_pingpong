@@ -25,6 +25,7 @@ class Client
         void send();
         void game();
         void start();
+        void messaging();
         Client();
         ~Client();
 };
